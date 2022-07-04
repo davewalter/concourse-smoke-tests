@@ -8,11 +8,10 @@ image_resource:
 
 inputs:
 - name: concourse-smoke-tests
-  path: go/src/github.com/joshzarrabi/concourse-smoke-tests
 - name: concourse-vars
 
 params:
   FLY_SKIP_SSL: true
 
 run:
-  path: go/src/github.com/joshzarrabi/concourse-smoke-tests/ci/tasks/run-tests
+  path: concourse-smoke-tests/ci/tasks/run-tests

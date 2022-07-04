@@ -1,26 +1,31 @@
-#!/bin/bash -xeu
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 function main() {
   local cwd
   cwd="${1}"
 
   export GOPATH="${cwd}/go"
-  export PATH="$PATH:$GOPATH:/usr/local/bin:$GOPATH/bin"
+  export PATH="${PATH}:${GOPATH}:/usr/local/bin:${GOPATH}/bin"
   export CONCOURSE_SOURCE_FILE="${cwd}/concourse-vars/vars.yml"
   go install github.com/onsi/ginkgo/ginkgo@latest
 
-  local external_url=$(cat ${CONCOURSE_SOURCE_FILE} | grep external_url | cut -d ' ' -f2 | tr -d '"')
-  if [[ ${FLY_SKIP_SSL} ]]; then
+  local external_url
+  external_url="$(grep external_url "${CONCOURSE_SOURCE_FILE}" | cut -d ' ' -f2 | tr -d '"')"
+
+  if [[ "${FLY_SKIP_SSL}" == "true" ]]; then
     wget --no-check-certificate -O fly "${external_url}/api/v1/cli?arch=amd64&platform=linux"
   else
     wget -O fly "${external_url}/api/v1/cli?arch=amd64&platform=linux"
   fi
+
   chmod +x fly
   mv fly /usr/local/bin/
 
-  pushd "${GOPATH}/src/github.com/joshzarrabi/concourse-smoke-tests"
+  pushd concourse-smoke-tests > /dev/null
     ginkgo -r -p .
-  popd
+  popd > /dev/null
 }
 
-main ${PWD}
+main "${PWD}"
